@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Color This In</title>
+  <style>
+    body { text-align: center; background: #f0f0f0; font-family: sans-serif; }
+    canvas { border: 1px solid #000; cursor: crosshair; margin-top: 10px; }
+    #controls { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Trace and Color This Artwork</h2>
+  <canvas id="canvas" width="500" height="700"></canvas>
+  <div id="controls">
+    <label>Brush Color: <input type="color" id="colorPicker" value="#000000"></label>
+    <label>Brush Size: <input type="range" id="brushSize" min="1" max="20" value="5"></label>
+    <button onclick="clearCanvas()">Clear</button>
+    <button onclick="downloadCanvas()">Download</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const colorPicker = document.getElementById('colorPicker');
+    const brushSize = document.getElementById('brushSize');
+    let painting = false;
+
+    const image = new Image();
+    image.src = 'line_art_version.png';
+    image.onload = () => ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    function startPos(e) {
+      painting = true;
+      draw(e);
+    }
+
+    function endPos() {
+      painting = false;
+      ctx.beginPath();
+    }
+
+    function draw(e) {
+      if (!painting) return;
+      ctx.lineWidth = brushSize.value;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = colorPicker.value;
+
+      const rect = canvas.getBoundingClientRect();
+      ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    }
+
+    function downloadCanvas() {
+      const link = document.createElement('a');
+      link.download = 'colored_art.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    canvas.addEventListener('mousedown', startPos);
+    canvas.addEventListener('mouseup', endPos);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseout', endPos);
+  </script>
+</body>
+</html>
